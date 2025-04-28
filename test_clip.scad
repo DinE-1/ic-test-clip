@@ -53,7 +53,7 @@ module clip_side(){
 //shaft
 shaft_outer_radius=6;
 shaft_inner_radius=3;
-shaft_cut_cushion=0;
+shaft_cut_cushion=0.5;
 module shaft(){
     difference(){
     
