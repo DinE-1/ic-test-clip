@@ -12,7 +12,7 @@ trace_displace=depth/5;
 rubberband_cushion=depth/10;
 
 //main clip width
-width=(trace_width+gap)*10;
+width=(trace_width+gap)*(10) - gap ; // subtracting gap to make it symmetric and fix alignment
 
 //rubberband
 rubberband_width=length/20;
@@ -53,7 +53,7 @@ module clip_side(){
 //shaft
 shaft_outer_radius=6;
 shaft_inner_radius=3;
-shaft_cut_cushion=0.5;
+shaft_cut_cushion=0;
 module shaft(){
     difference(){
     
@@ -81,20 +81,6 @@ module shaft_rod(rod_dia_cushion=0){
     rod_len_cushion=(2*shaft_cut_cushion)+0.5;
     translate([0,0,rod_len_cushion/2]) // this is to center the rod
     cylinder(width-rod_len_cushion,shaft_inner_radius-rod_dia_cushion,shaft_inner_radius-rod_dia_cushion);
-}
-
-//shaft rod stopper
-rod_stopper_thickness=0.5;
-module shaft_rod_stopper(){
-
-    difference(){
-        cube([rod_stopper_thickness,shaft_outer_radius,rod_stopper_thickness]);
-        
-        translate([0,0,0])
-        rotate([0,-50,0])
-        cube([rod_stopper_thickness+0.5,shaft_outer_radius,rod_stopper_thickness+0.5]);
-    }
-
 }
 
 //main construction
