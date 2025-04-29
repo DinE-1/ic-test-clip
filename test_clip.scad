@@ -19,7 +19,7 @@ rubberband_width=length/20;
 rubberband_depth=depth-(trace_depth+trace_displace) -rubberband_cushion;
 
 //smoothness for cylinder(number of sides)
-$fn=20;
+$fn=100;
 
 module clip_side(){
     union()
@@ -90,36 +90,43 @@ module shaft_rod(rod_dia_cushion=0){
     cylinder(width-rod_len_cushion,shaft_inner_radius-rod_dia_cushion,shaft_inner_radius-rod_dia_cushion);
 }
 
-//translate([10,10,10]*5)
-//main construction
-union(){
 clip_shaft_displace=length/1.7;
 
-//side 1
-color("blue")
-translate([0,0,-2*trace_displace])
-union(){
+//side ends
+module clip_side_shaft(){
     translate([-width,0,2*shaft_height])
     clip_side();
     translate([-width/2,clip_shaft_displace,shaft_height+trace_displace])
     rotate([90,0,90])
     ends_shaft(1,shaft_cut_cushion);
+}
 
-};
-
-//side 2
-color("red")
-union(){
+//side middle
+module clip_middle_shaft(){
     rotate([0,180,0])
     clip_side();
     translate([-width/2,clip_shaft_displace,shaft_height-trace_displace])
     rotate([-90,0,90])
     shaft(2.5);
-};
+}
 
-//rod
-color("pink")
-rotate([0,90,0])
-translate([-shaft_height+trace_displace,clip_shaft_displace,-width/2])
-shaft_rod(0.5);
+//translate([10,10,10]*5)
+//main construction
+rotate([0,-180,0])
+translate([0,0,depth])
+union(){
+    //side 1
+    color("blue")
+    translate([0,0,-2*trace_displace])
+    clip_side_shaft();
+
+    //side 2
+    color("red")
+    clip_middle_shaft();
+
+    //rod
+    color("pink")
+    rotate([0,90,0])
+    translate([-shaft_height+trace_displace,clip_shaft_displace,-width/2])
+    shaft_rod(0.5);
 }
