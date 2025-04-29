@@ -1,5 +1,5 @@
 //main clip side
-length=50;
+length=60;
 depth=5;
 
 //trace
@@ -18,8 +18,8 @@ width=(trace_width+gap)*(10) - gap ; // subtracting gap to make it symmetric and
 rubberband_width=length/20;
 rubberband_depth=depth-(trace_depth+trace_displace) -rubberband_cushion;
 
-//roundness for cylinder(number of sides)
-$fn=30;
+//smoothness for cylinder(number of sides)
+$fn=20;
 
 module clip_side(){
     union()
@@ -51,72 +51,75 @@ module clip_side(){
 }
 
 //shaft
-shaft_outer_radius=6;
-shaft_inner_radius=3;
+shaft_outer_radius=width/2;
+shaft_inner_radius=shaft_outer_radius/1.5;
+shaft_height=length/5;
+shaft_middle_width=width/2;
 shaft_cut_cushion=0.5;
-module shaft(){
+
+module shaft(cushion=0,s_width=shaft_middle_width, shaft_cut=0){
+    cylinder_height=s_width - cushion;    
+    translate([0,0,-cylinder_height/2])//center it
     difference(){
-    
+        union(){
+            translate([-shaft_outer_radius,0,0])
+            cube([2*shaft_outer_radius,shaft_height,cylinder_height]);
+            cylinder(cylinder_height,shaft_outer_radius,shaft_outer_radius);
+        };
+        translate([0,0,shaft_cut])
+        cylinder(cylinder_height-2*shaft_cut,shaft_inner_radius,shaft_inner_radius);
+    };
+}
+//abstraction for shaft ends
+module ends_shaft(cushion=0, shaft_cut=0){
+    difference(){
         //main shaft
-        cylinder(width,shaft_outer_radius,shaft_outer_radius);
-        //inner hole
-        translate([0,0,shaft_cut_cushion])//for cutting front and back
-        cylinder(width-2*shaft_cut_cushion,shaft_inner_radius,shaft_inner_radius);
+        shaft(0,width,shaft_cut);
+
+        //remove center piece
+        shaft(0,shaft_middle_width-cushion);
     
     };
 }
 
-//shaft negative
-module center_shaft_negative(cushion=0){
-    cylinder_height=width/2 - cushion;
-    translate([0,0,+cushion/2])
-    difference(){
-        cylinder(cylinder_height,shaft_outer_radius,shaft_outer_radius);
-        cylinder(cylinder_height,shaft_inner_radius,shaft_inner_radius);
-    }
-}
-
 //shaft rod
+rod_len_cushion=0.5 + 2*shaft_cut_cushion;
 module shaft_rod(rod_dia_cushion=0){
-    rod_len_cushion=(2*shaft_cut_cushion)+0.5;
-    translate([0,0,rod_len_cushion/2]) // this is to center the rod
+    rod_len=width-rod_len_cushion;
+    translate([0,0,-rod_len/2]) // this is to center the rod
     cylinder(width-rod_len_cushion,shaft_inner_radius-rod_dia_cushion,shaft_inner_radius-rod_dia_cushion);
 }
 
+//translate([10,10,10]*5)
 //main construction
+union(){
+clip_shaft_displace=length/1.7;
 
 //side 1
-translate([0,0,trace_displace])
+color("blue")
+translate([0,0,-2*trace_displace])
 union(){
-difference(){
-    color("blue")
-    union(){
-        translate([0,0,shaft_outer_radius-trace_displace])
-        clip_side();
-        translate([0,length/2,0])
-        rotate([0,90,0])
-        shaft();
-    }
-    translate([width/4,length/2,0])
-    rotate([0,90,0])
-    center_shaft_negative(0);
-}
-}
+    translate([-width,0,2*shaft_height])
+    clip_side();
+    translate([-width/2,clip_shaft_displace,shaft_height+trace_displace])
+    rotate([90,0,90])
+    ends_shaft(1,shaft_cut_cushion);
+
+};
 
 //side 2
 color("red")
-translate([width,0,0])
 union(){
-    translate([0,0,-shaft_outer_radius+trace_displace])
     rotate([0,180,0])
     clip_side();
-    rotate([0,90,0])
-    translate([0,length/2,-(3*width/4)])
-    center_shaft_negative(2);
+    translate([-width/2,clip_shaft_displace,shaft_height-trace_displace])
+    rotate([-90,0,90])
+    shaft(2.5);
 };
 
 //rod
-color("pink",1)
+color("pink")
 rotate([0,90,0])
-translate([0,length/2,0])
-shaft_rod(1);
+translate([-shaft_height+trace_displace,clip_shaft_displace,-width/2])
+shaft_rod(0.5);
+}
